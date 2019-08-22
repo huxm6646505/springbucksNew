@@ -3,7 +3,9 @@ package com.example.demo;
 import com.example.demo.mapper.CoffeeNewMapper;
 import com.example.demo.model.CoffeeNew;
 import com.example.demo.model.CoffeeNewExample;
+import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.session.RowBounds;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.mybatis.generator.api.MyBatisGenerator;
@@ -39,8 +41,8 @@ public class SpringbucksApplication implements ApplicationRunner {
 	public void run(ApplicationArguments args) throws Exception {
 //		generateArtifacts();
 
-		playWithArtifacts();
-
+//		playWithArtifacts();
+		pagehelper();
 
 	}
 
@@ -56,6 +58,7 @@ public class SpringbucksApplication implements ApplicationRunner {
 	}
 
 
+	//插入数据
 	private void playWithArtifacts() {
 		CoffeeNew espresso = new CoffeeNew()
 				.withName("espresso")
@@ -78,5 +81,28 @@ public class SpringbucksApplication implements ApplicationRunner {
 		example.createCriteria().andNameEqualTo("latte");
 		List<CoffeeNew> list = coffeeNewMapper.selectByExample(example);
 		list.forEach(e -> log.info("selectByExample: {}", e));
+	}
+
+	//Mybatis 分页测试
+	private void pagehelper() {
+		{
+			coffeeNewMapper.findAllWithRowBounds(new RowBounds(1, 3))
+					.forEach(c -> log.info("Page(1) Coffee {}", c));
+			coffeeNewMapper.findAllWithRowBounds(new RowBounds(2, 3))
+					.forEach(c -> log.info("Page(2) Coffee {}", c));
+
+			log.info("===================");
+
+			coffeeNewMapper.findAllWithRowBounds(new RowBounds(1, 0))
+					.forEach(c -> log.info("Page(1) Coffee {}", c));
+
+			log.info("===================");
+
+			coffeeNewMapper.findAllWithParam(1, 3)
+					.forEach(c -> log.info("Page(1) Coffee {}", c));
+			List<CoffeeNew> list = coffeeNewMapper.findAllWithParam(2, 3);
+			PageInfo page = new PageInfo(list);
+			log.info("PageInfo: {}", page);
+		}
 	}
 }

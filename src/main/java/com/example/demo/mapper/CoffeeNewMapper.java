@@ -130,4 +130,11 @@ public interface CoffeeNewMapper {
         "where id = #{id,jdbcType=BIGINT}"
     })
     int updateByPrimaryKey(CoffeeNew record);
+
+    @Select("select * from t_coffeenew order by id")
+    List<CoffeeNew> findAllWithRowBounds(RowBounds rowBounds);
+
+    @Select("select * from t_coffeenew order by id")
+    List<CoffeeNew> findAllWithParam(@Param("pageNum") int pageNum,
+                                  @Param("pageSize") int pageSize);
 }
