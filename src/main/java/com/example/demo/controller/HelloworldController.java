@@ -23,4 +23,9 @@ public class HelloworldController {
     public String hello3() {
         return "Hello World!";
     }
+
+    @RequestMapping("/hello3")
+    public String hello7() {
+        return "Hello World!";
+    }
 }
