@@ -1,9 +1,13 @@
 package com.example.demo;
 
+import com.example.demo.handler.BytesToMoneyConverter;
+import com.example.demo.handler.MoneyToBytesConverter;
 import com.example.demo.mapper.CoffeeNewMapper;
 import com.example.demo.model.CoffeeNew;
 import com.example.demo.model.CoffeeNewExample;
+import com.example.demo.service.CoffeeNewService;
 import com.github.pagehelper.PageInfo;
+import io.lettuce.core.ReadFrom;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.RowBounds;
 import org.joda.money.CurrencyUnit;
@@ -18,10 +22,13 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.convert.RedisCustomConversions;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @SpringBootApplication
 @Slf4j
@@ -31,19 +38,44 @@ public class SpringbucksApplication implements ApplicationRunner {
 	private CoffeeNewMapper coffeeNewMapper;
 
 
+	@Autowired(required = false)
+	private CoffeeNewService coffeeNewService;
+
 	public static void main(String[] args) {
 		SpringApplication.run(SpringbucksApplication.class, args);
 	}
 
+	@Bean
+	public RedisTemplate<String, CoffeeNew> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+		RedisTemplate<String, CoffeeNew> template = new RedisTemplate<>();
+		template.setConnectionFactory(redisConnectionFactory);
+		return template;
+	}
 
+
+	//redis lettuce客户端配置
+	@Bean
+	public LettuceClientConfigurationBuilderCustomizer customizer() {
+		return builder -> builder.readFrom(ReadFrom.MASTER_PREFERRED);
+	}
+
+	@Bean
+	public RedisCustomConversions redisCustomConversions() {
+		return new RedisCustomConversions(
+				Arrays.asList(new MoneyToBytesConverter(), new BytesToMoneyConverter()));
+	}
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
+		//mybatis generate 生成类与方法
 //		generateArtifacts();
 
+		//mybatis 插入数据方法
 //		playWithArtifacts();
-		pagehelper();
 
+		//mybatis page分页方法
+//		pagehelper();
+		redisTest();
 	}
 
 //MyBatis 代码生成初始化
@@ -105,4 +137,17 @@ public class SpringbucksApplication implements ApplicationRunner {
 			log.info("PageInfo: {}", page);
 		}
 	}
+
+	private  void  redisTest(){
+		Optional<CoffeeNew> c = coffeeNewService.findOneCoffee("mocha");
+		log.info("Coffee {}", c);
+
+		for (int i = 0; i < 5; i++) {
+			c = coffeeNewService.findOneCoffee("mocha");
+		}
+
+		log.info("Value from Redis: {}", c);
+	}
+
+
 }

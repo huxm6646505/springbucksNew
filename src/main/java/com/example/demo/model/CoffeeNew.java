@@ -3,7 +3,9 @@ package com.example.demo.model;
 import java.io.Serializable;
 import java.util.Date;
 import org.joda.money.Money;
+import org.springframework.data.redis.core.RedisHash;
 
+@RedisHash(value = "springbucks-coffee", timeToLive = 60)
 public class CoffeeNew implements Serializable {
     /**
      *

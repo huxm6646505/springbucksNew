@@ -3,6 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.model.CoffeeNew;
 import com.example.demo.model.CoffeeNewExample;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.session.RowBounds;
@@ -137,4 +138,7 @@ public interface CoffeeNewMapper {
     @Select("select * from t_coffeenew order by id")
     List<CoffeeNew> findAllWithParam(@Param("pageNum") int pageNum,
                                   @Param("pageSize") int pageSize);
+
+    @Select("select * from t_coffeenew where name=#{name} ")
+    Optional<CoffeeNew> findOneByName(@Param("name")String  name);
 }
